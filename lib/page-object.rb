@@ -7,12 +7,12 @@ require 'page-object/page_factory'
 require 'page-object/page_populator'
 require 'page-object/javascript_framework_facade'
 require 'page-object/indexed_properties'
-require 'page-object/sections'
+require 'page-object/section_collection'
 require 'page-object/widgets'
 
-require 'watir-webdriver'
-require 'page-object/platforms/watir_webdriver/element'
-require 'page-object/platforms/watir_webdriver/page_object'
+require 'watir'
+require 'page-object/platforms/watir/element'
+require 'page-object/platforms/watir/page_object'
 require 'page-object/platforms/selenium_webdriver/element'
 require 'page-object/platforms/selenium_webdriver/page_object'
 
@@ -26,7 +26,7 @@ require 'selenium/webdriver/common/error'
 # button we might define our page like the one below.  We can then interact with
 # the object using the generated methods.
 #
-# @example Login page example 
+# @example Login page example
 #   class LoginPage
 #     include PageObject
 #
@@ -50,6 +50,18 @@ module PageObject
   include ElementLocators
   include PagePopulator
 
+  def method_missing(method, *args, &block)
+    if @root_element && @root_element.respond_to?(method)
+      @root_element.send(method, *args, &block)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(method, include_all = false)
+    @root_element && @root_element.respond_to?(method) || super
+  end
+
   # @return [Watir::Browser or Selenium::WebDriver::Driver] the platform browser passed to the constructor
   attr_reader :browser
   # @return [PageObject::WatirPageObject or PageObject::SeleniumPageObject] the platform page object
@@ -57,7 +69,7 @@ module PageObject
 
   #
   # Construct a new page object.  Prior to browser initialization it will call
-  # a method named initialize_accessors if it exists. Upon initialization of 
+  # a method named initialize_accessors if it exists. Upon initialization of
   # the page it will call a method named initialize_page if it exists.
   #
   # @param [Watir::Browser, Watir::HTMLElement or Selenium::WebDriver::Driver, Selenium::WebDriver::Element] the platform browser/element to use
@@ -265,7 +277,7 @@ module PageObject
   #
   def execute_script(script, *args)
     args.map! { |e| e.kind_of?(PageObject::Elements::Element) ? e.element : e }
-    platform.execute_script(script, *args)    
+    platform.execute_script(script, *args)
   end
 
   #
@@ -309,7 +321,7 @@ module PageObject
   #
   def in_iframe(identifier, frame=nil, &block)
     platform.in_iframe(identifier, frame, &block)
-  end  
+  end
 
   #
   # Override the normal showModalDialog call is it opens a window instead

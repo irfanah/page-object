@@ -2,23 +2,22 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
-if ENV['coverage']
-  raise "simplecov only works on Ruby 1.9" unless RUBY_VERSION =~ /^1\.9/
-
-  require 'simplecov'
-  SimpleCov.start { add_filter "spec/" }
-end
+require 'simplecov'
+require 'coveralls'
+SimpleCov.start { add_filter 'spec/' }
 
 require 'rspec'
-require 'watir-webdriver'
+require 'watir'
 require 'selenium-webdriver'
 
 require 'page-object'
 
 def mock_watir_browser
   watir_browser = double('watir')
-  allow(watir_browser).to receive(:is_a?).with(anything()).and_return(false)
+  allow(watir_browser).to receive(:is_a?).with(anything).and_return(false)
   allow(watir_browser).to receive(:is_a?).with(Watir::Browser).and_return(true)
+  allow(watir_browser).to receive(:exists?).and_return(true)
+  allow(watir_browser).to receive(:to_subtype).and_return(watir_browser)
   watir_browser
 end
 

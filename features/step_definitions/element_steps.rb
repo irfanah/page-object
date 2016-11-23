@@ -186,6 +186,22 @@ When /^I set the focus to the test text_field$/ do
   @page.text_field_element(:id => 'onfocus_text_field').focus
 end
 
+When /^I set the focus off the test text_field$/ do
+  @page.text_field_unfocus_element.focus
+end
+
+When /^I retrieve the focus state of the text_field$/ do
+  @focused_state = @page.text_field_onfocus_element.focused?
+end
+
+When /^I should know that the text_field is focused$/ do
+  @focused_state.should be true
+end
+
+When /^I should know that the text_field is not focused$/ do
+  @focused_state.should be false
+end
+
 When /^I retrieve the label element$/ do
   @element = @page.label_id_element
 end
@@ -263,4 +279,32 @@ end
 Then(/^I should know the attribute "(.*?)" includes "(.+)"$/) do |attribute, included|
   @attr = @element.attribute(attribute)
   @attr.should include included
+end
+
+Then(/^I should be able to know its location$/) do
+  expect(@element.location.y).to be > 0
+  expect(@element.location.x).to be > 0
+end
+
+Then(/^I should be able to know its size$/) do
+  expect(@element.size.width).to be > 0
+  expect(@element.size.height).to be > 0
+end
+
+Then(/the element height is not 0/) do
+  (@element.height.is_a? Integer).should ==true
+  @element.height.should > 0
+end
+
+Then(/the element width is not 0/) do
+  (@element.width.is_a? Integer).should ==true
+  @element.width.should > 0
+end
+
+Then(/the element centre should be greater than element y position/) do
+  @element.centre['y'].should > @element.location.y
+end
+
+Then(/the element centre should be greater than element x position/) do
+  @element.centre['x'].should > @element.location.x
 end

@@ -40,15 +40,15 @@ describe PageObject::Elements::SelectList do
     end
 
     context "for watir" do
-      let(:watir_sel_list) { PageObject::Elements::SelectList.new(sel_list, :platform => :watir_webdriver) }
+      let(:watir_sel_list) { PageObject::Elements::SelectList.new(sel_list, :platform => :watir) }
 
       it "should return an option when indexed" do
-        expect(sel_list).to receive(:find_elements).with(:xpath, ".//child::option").and_return(opts)
+        expect(sel_list).to receive(:options).with(no_args).and_return(opts)
         expect(watir_sel_list[0]).to be_instance_of PageObject::Elements::Option
       end
 
       it "should return an array of options" do
-        expect(sel_list).to receive(:find_elements).with(:xpath, ".//child::option").and_return(opts)
+        expect(sel_list).to receive(:options).with(no_args).and_return(opts)
         expect(watir_sel_list.options.size).to eql 2
       end
 

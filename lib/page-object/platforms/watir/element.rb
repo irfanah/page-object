@@ -1,4 +1,4 @@
-require 'watir-webdriver/extensions/select_text'
+require 'watir/extensions/select_text'
 
 module PageObject
   module Platforms
@@ -28,7 +28,7 @@ module PageObject
         def flash
           element.flash
         end
-        
+
         #
         # Get the text for the element
         #
@@ -134,7 +134,7 @@ module PageObject
           parent = element.parent
           type = element.type if parent.tag_name.to_sym == :input
           cls = ::PageObject::Elements.element_class_for(parent.tag_name, type)
-          cls.new(parent, :platform => :watir_webdriver)
+          cls.new(parent, :platform => @platform.class::PLATFORM_NAME)
         end
 
         #
@@ -145,19 +145,33 @@ module PageObject
         end
 
         #
+        # return true if an element is focused
+        #
+        def focused?
+          element.focused?
+        end
+
+        #
         # Select the provided text
         #
         def select_text(text)
           element.select_text text
         end
-        
+
+        #
+        # Right click on an element
+        #
+        def right_click
+          element.right_click
+        end
+
         #
         # Waits until the element is present
         #
         # @param [Integer] (defaults to: 5) seconds to wait before timing out
         #
         def when_present(timeout=::PageObject.default_element_wait)
-          element.wait_until_present(timeout)
+          element.wait_until(timeout: timeout, message: "Element not present in #{timeout} seconds",  &:present?)
           self
         end
 
@@ -168,7 +182,7 @@ module PageObject
         # timing out
         #
         def when_not_present(timeout=::PageObject.default_element_wait)
-          element.wait_while_present(timeout)
+          element.wait_while(timeout: timeout, message: "Element still present in #{timeout} seconds", &:present?)
         end
 
         #
@@ -177,9 +191,7 @@ module PageObject
         # @param [Integer] (defaults to: 5) seconds to wait before timing out
         #
         def when_visible(timeout=::PageObject.default_element_wait)
-          Object::Watir::Wait.until(timeout, "Element was not visible in #{timeout} seconds") do
-            visible?
-          end
+          element.wait_until(timeout: timeout, message: "Element not visible in #{timeout} seconds", &:visible?)
           self
         end
 
@@ -189,10 +201,7 @@ module PageObject
         # @param [Integer] (defaults to: 5) seconds to wait before timing out
         #
         def when_not_visible(timeout=::PageObject.default_element_wait)
-          Object::Watir::Wait.while(timeout, "Element still visible after #{timeout} seconds") do
-            visible?
-          end
-          self
+            element.wait_while(timeout: timeout, message: "Element still visible after #{timeout} seconds", &:visible?)
         end
 
         #
@@ -203,7 +212,7 @@ module PageObject
         # @param the block to execute when the event occurs
         #
         def wait_until(timeout=::PageObject.default_element_wait, message=nil, &block)
-          Object::Watir::Wait.until(timeout, message, &block)
+          Object::Watir::Wait.until(timeout: timeout, message: message, &block)
         end
         
         #
@@ -242,6 +251,43 @@ module PageObject
         #
         def scroll_into_view
           element.wd.location_once_scrolled_into_view
+        end
+
+        #
+        # location of element (x, y)
+        #
+        def location
+          element.wd.location
+        end
+
+        #
+        # size of element (width, height)
+        #
+        def size
+          element.wd.size
+        end
+
+        #
+        # Get height of element
+        #
+        def height
+          element.wd.size['height']
+        end
+
+        #
+        # Get width of element
+        #
+        def width
+          element.wd.size['width']
+        end
+
+        #
+        # Get centre coordinates of element
+        #
+        def centre
+          location = element.wd.location
+          size = element.wd.size
+          {'y' => (location['y'] + (size['height']/2)), 'x' => (location['x'] + (size['width']/2))}
         end
       end
     end

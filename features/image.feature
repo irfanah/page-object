@@ -22,15 +22,6 @@ Feature: Image
     | index     |
     | alt       |
     | src       |
-
-  @selenium_only
-  Scenario Outline: Locating an image on the page
-    When I get the image element by "<search_by>"
-    Then the image should be "106" pixels wide
-    And the image should be "106" pixels tall
-
-  Scenarios:
-    | search_by |
     | css       |
 
   Scenario Outline: Locating an image using multiple parameters
@@ -48,3 +39,11 @@ Feature: Image
     Then I should see that the image exists
     And the image should be "106" pixels wide
     And the image should be "106" pixels tall
+
+  Scenario: Check an image loaded
+    When I get the image element load status
+    Then I should see that the image loaded
+
+  Scenario: Check an image is not loaded
+    When I get the broken image element load status
+    Then I should see that the image is not loaded

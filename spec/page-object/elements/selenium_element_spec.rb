@@ -33,7 +33,7 @@ describe "Element for Selenium" do
     bridge = double('bridge')
     expect(@selenium_driver).to receive(:attribute).and_return('blue')
     expect(@selenium_driver).to receive(:instance_variable_get).and_return(bridge)
-    expect(bridge).to receive(:executeScript).exactly(10).times
+    expect(bridge).to receive(:execute_script).exactly(10).times
     @selenium_element.flash
   end
 
@@ -153,25 +153,78 @@ describe "Element for Selenium" do
 
   it "should fire an event" do
     expect(@selenium_driver).to receive(:instance_variable_get).with(:@bridge).and_return(@selenium_driver)
-    expect(@selenium_driver).to receive(:executeScript)
+    expect(@selenium_driver).to receive(:execute_script)
     @selenium_element.fire_event('onfocus')
   end
 
   it "should find the parent element" do
     expect(@selenium_driver).to receive(:instance_variable_get).with(:@bridge).and_return(@selenium_driver)
-    expect(@selenium_driver).to receive(:executeScript).and_return(@selenium_driver)
+    expect(@selenium_driver).to receive(:execute_script).and_return(@selenium_driver)
     expect(@selenium_driver).to receive(:tag_name).twice.and_return(:div)
     @selenium_element.parent
   end
 
   it "should set the focus" do
     expect(@selenium_driver).to receive(:instance_variable_get).and_return(@selenium_driver)
-    expect(@selenium_driver).to receive(:executeScript)
+    expect(@selenium_driver).to receive(:execute_script)
     @selenium_element.focus
+  end
+
+  it "should know when it is focused" do
+    expect(@selenium_driver).to receive(:instance_variable_get).and_return(@selenium_driver)
+    expect(@selenium_driver).to receive(:active_element).and_return(@selenium_driver)
+    expect(@selenium_element.focused?).to be true
+  end
+
+  it "should know when it is not focused" do
+    expect(@selenium_driver).to receive(:instance_variable_get).and_return(@selenium_driver)
+    expect(@selenium_driver).to receive(:active_element).and_return(false)
+    expect(@selenium_element.focused?).to be false
   end
 
   it "should scroll into view" do
     expect(@selenium_driver).to receive(:location_once_scrolled_into_view)
     @selenium_element.scroll_into_view
+  end
+
+  it "should have a location" do
+    expect(@selenium_driver).to receive(:location)
+    @selenium_element.location
+  end
+
+  it "should have a size" do
+    expect(@selenium_driver).to receive(:size)
+    @selenium_element.size
+  end
+
+  it "should have a height" do
+    expect(@selenium_driver).to receive(:size).and_return({'width' => 30, 'height' => 20})
+    expect(@selenium_element.height).to eql 20
+  end
+
+  it "should have a width" do
+    expect(@selenium_driver).to receive(:size).and_return({'width' => 30, 'height' => 20})
+    expect(@selenium_element.width).to eql 30
+  end
+
+  it "should have a centre" do
+    expect(@selenium_driver).to receive(:location).and_return({'y' => 80, 'x' => 40})
+    expect(@selenium_driver).to receive(:size).and_return({'width' => 30, 'height' => 20})
+    expect(@selenium_element.centre).to include(
+      'y' => 90,
+      'x' => 55
+    )
+  end
+
+  it "should have a centre greater than y position" do
+    expect(@selenium_driver).to receive(:location).and_return({'y' => 80, 'x' => 40}).twice
+    expect(@selenium_driver).to receive(:size).and_return({'width' => 30, 'height' => 20})
+    expect(@selenium_element.centre['y']).to be > @selenium_element.location['y']
+  end
+
+  it "should have a centre greater than x position" do
+    expect(@selenium_driver).to receive(:location).and_return({'y' => 80, 'x' => 40}).twice
+    expect(@selenium_driver).to receive(:size).and_return({'width' => 30, 'height' => 20})
+    expect(@selenium_element.centre['x']).to be > @selenium_element.location['x']
   end
 end

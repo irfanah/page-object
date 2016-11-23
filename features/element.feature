@@ -21,6 +21,16 @@ Feature: Elements
     When I set the focus to the test text_field
     Then I should know that the text_field has the focus
 
+  Scenario: Checking focus of the element with focus
+    And I set the focus to the test text_field
+    When I retrieve the focus state of the text_field
+    Then I should know that the text_field is focused
+
+  Scenario: Checking focus of the element without focus
+    And I set the focus off the test text_field
+    When I retrieve the focus state of the text_field
+    Then I should know that the text_field is not focused
+
   Scenario: Link element methods
     When I retrieve a link element
     Then I should know it exists
@@ -320,3 +330,24 @@ Feature: Elements
 
   Scenario: Selecting the text for an element
     Then I should be able to select "Elements" from the paragraph
+
+  Scenario: Element location
+    When I retrieve a link element
+    Then I should be able to know its location
+
+  Scenario: Element size
+    When I retrieve a link element
+    Then I should be able to know its size
+
+  Scenario: Getting the height of an element
+    When I retrieve a link element
+    Then the element height is not 0
+
+  Scenario: Getting the width of an element
+    When I retrieve a link element
+    Then the element width is not 0
+
+  Scenario: Getting the centre of an element
+    When I retrieve a button element
+    Then the element centre should be greater than element y position
+    And the element centre should be greater than element x position

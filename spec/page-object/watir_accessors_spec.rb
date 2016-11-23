@@ -35,7 +35,8 @@ class WatirAccessorsTestPageObject
   canvas(:my_canvas, :id => 'canvas_id')
   audio(:acdc, :id => 'audio_id')
   video(:movie, :id => 'video_id')
-  b(:bold,:id=>'bold')
+  b(:bold, :id => 'bold')
+  i(:italic, :id => 'italic')
 end
 
 class WatirBlockPageObject
@@ -133,6 +134,9 @@ class WatirBlockPageObject
   b :bold do |element|
     "b"
   end
+  i :italic do |element|
+    "i"
+  end
 end
 
 describe PageObject::Accessors do
@@ -197,7 +201,7 @@ describe PageObject::Accessors do
 
     it "should raise error when it does not have expected title" do
       expect(watir_browser).to receive(:title).once.and_return("Not Expected")
-      expect { watir_page_object.has_expected_title? }.to raise_error
+      expect { watir_page_object.has_expected_title? }.to raise_error "Expected title \'Expected Title\' instead of \'Not Expected\'"
     end
   end
 
@@ -214,6 +218,33 @@ describe PageObject::Accessors do
         expected_element :foo
       end
       expect(FakePage.new(watir_browser)).not_to have_expected_element
+    end
+  end
+
+  context "using element accessor" do
+    class WatirDefaultElementTagToElement
+      include PageObject
+      # verify that the explicit :element tag can be omitted
+      # element('button', :element, {:css => 'some css'})
+      element('button', { :css => 'some css' })
+      elements('button2', { :css => 'some css' })
+    end
+
+    let (:page) { WatirDefaultElementTagToElement.new(watir_browser) }
+
+    def mock_driver_for(tag)
+      expect(watir_browser).to receive(tag).with(:css => 'some css').and_return(watir_browser)
+    end
+
+    it "should default element tag to element" do
+      mock_driver_for :element
+      page.button_element
+    end
+
+    it "should default elements tag to element" do
+      mock_driver_for :elements
+      expect(watir_browser).to receive(:map)
+      page.button2_elements.to_a
     end
   end
 
@@ -253,6 +284,7 @@ describe PageObject::Accessors do
 
     def mock_driver_for(tag)
       expect(watir_browser).to receive(tag).with(:index => 0).and_return(watir_browser)
+      allow(watir_browser).to receive(:exists?).with(no_args)
     end
 
     it "should work with a text_field" do
@@ -751,6 +783,7 @@ describe PageObject::Accessors do
     context "when called on a page object" do
       it "should generate accessor methods" do
         expect(watir_page_object).to respond_to(:logo_element)
+        expect(watir_page_object).to respond_to(:logo_loaded?)
       end
 
       it "should call a block on the element method when present" do
@@ -1128,6 +1161,31 @@ describe PageObject::Accessors do
       expect(watir_browser).to receive(:b).and_return(watir_browser)
       element = watir_page_object.bold_element
       expect(element).to be_instance_of PageObject::Elements::Bold
+    end
+  end
+
+  describe "i accessors" do
+    context "when called on a page object" do
+      it "should generate accessor methods" do
+        expect(watir_page_object).to respond_to(:italic)
+        expect(watir_page_object).to respond_to(:italic_element)
+      end
+
+      it "should call a block on the element method when present" do
+        expect(block_page_object.italic_element).to eql "i"
+      end
+    end
+
+    it "should retrieve the text from the i" do
+      expect(watir_browser).to receive(:i).and_return(watir_browser)
+      expect(watir_browser).to receive(:text).and_return("value")
+      expect(watir_page_object.italic).to eql "value"
+    end
+
+    it "should retrieve the element from the page" do
+      expect(watir_browser).to receive(:i).and_return(watir_browser)
+      element = watir_page_object.italic_element
+      expect(element).to be_instance_of PageObject::Elements::Italic
     end
   end
 

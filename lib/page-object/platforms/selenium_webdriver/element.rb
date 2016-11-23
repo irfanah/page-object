@@ -1,4 +1,4 @@
-require 'watir-webdriver/atoms'
+require 'watir/atoms'
 
 module PageObject
   module Platforms
@@ -31,7 +31,7 @@ module PageObject
           the_bridge = bridge
           10.times do |n|
             color = (n % 2 == 0) ? 'red' : original_color
-            the_bridge.executeScript("arguments[0].style.backgroundColor = '#{color}'", element)
+            the_bridge.execute_script("arguments[0].style.backgroundColor = '#{color}'", element)
           end
         end
         
@@ -51,7 +51,7 @@ module PageObject
         #
         def html
           script = "return (%s).apply(null, arguments)" % ATOMS.fetch(:getOuterHtml)
-          bridge.executeScript(script, element).strip
+          bridge.execute_script(script, element).strip
         end
 
         #
@@ -119,7 +119,7 @@ module PageObject
         def fire_event(event_name)
           event_name = event_name.to_s.sub(/^on/, '').downcase
           script = "return (%s).apply(null, arguments)" % ATOMS.fetch(:fireEvent)
-          bridge.executeScript(script, element, event_name)
+          bridge.execute_script(script, element, event_name)
         end
 
         #
@@ -143,17 +143,24 @@ module PageObject
         #
         def parent
           script = "return (%s).apply(null, arguments)" % ATOMS.fetch(:getParentElement)
-          parent = bridge.executeScript(script, element)
+          parent = bridge.execute_script(script, element)
           type = element.attribute(:type).to_s.downcase if parent.tag_name.to_sym == :input
           cls = ::PageObject::Elements.element_class_for(parent.tag_name, type)
-          cls.new(parent, :platform => :selenium_webdriver)
+          cls.new(parent, :platform => @platform.class::PLATFORM_NAME)
         end
 
         #
         # Set the focus to the current element
         #
         def focus
-          bridge.executeScript("return arguments[0].focus()", element)
+          bridge.execute_script("return arguments[0].focus()", element)
+        end
+
+        #
+        # return true if an element is focused
+        #
+        def focused?
+          element == bridge.active_element
         end
 
         #
@@ -162,7 +169,7 @@ module PageObject
         def select_text(text)
           Watir::Atoms.load(:selectText)
           script = "return (%s).apply(null, arguments)" % ATOMS.fetch(:selectText)
-          bridge.executeScript(script, element, text)
+          bridge.execute_script(script, element, text)
         end
 
         #
@@ -280,10 +287,47 @@ module PageObject
           element.location_once_scrolled_into_view
         end
 
+        #
+        # location of element (x, y)
+        #
+        def location
+          element.location
+        end
+
+        #
+        # size of element (width, height)
+        #
+        def size
+          element.size
+        end
+
+        #
+        # Get height of element
+        #
+        def height
+          element.size['height']
+        end
+
+        #
+        # Get width of element
+        #
+        def width
+          element.size['width']
+        end
+
+        #
+        # Get centre coordinates of element
+        #
+        def centre
+          location = element.location
+          size = element.size
+          {'y' => (location['y'] + (size['height']/2)), 'x' => (location['x'] + (size['width']/2))}
+        end
+
         private
 
         def bridge
-          bridge = element.instance_variable_get(:@bridge)
+          element.instance_variable_get(:@bridge)
         end
       end
     end
